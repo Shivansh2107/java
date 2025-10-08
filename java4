@@ -1,0 +1,53 @@
+import java.util.*;
+import java.util.stream.Collectors;
+
+class Student {
+    private String name;
+    private int marks;
+
+    public Student(String name, int marks) {
+        this.name = name;
+        this.marks = marks;
+    }
+
+    public String getName() { return name; }
+    public int getMarks() { return marks; }
+
+    @Override
+    public String toString() {
+        return name + " | Marks: " + marks;
+    }
+}
+
+public class StudentStreamDemo {
+    public static void main(String[] args) {
+        // Step 1: Create a list of students
+        List<Student> students = Arrays.asList(
+            new Student("Alice", 85),
+            new Student("Bob", 67),
+            new Student("Charlie", 92),
+            new Student("Diana", 74),
+            new Student("Ethan", 80)
+        );
+
+        System.out.println("Original List:");
+        students.forEach(System.out::println);
+
+        // Step 2: Stream operations - Filter, Sort, Map, Display
+        System.out.println("\nStudents scoring above 75%, sorted by marks:");
+        students.stream()
+                .filter(s -> s.getMarks() > 75)                       // filter condition
+                .sorted(Comparator.comparingInt(Student::getMarks))   // sort by marks ascending
+                .map(Student::getName)                                // get only names
+                .forEach(System.out::println);                        // display names
+
+        // Optional: Collect names into a List<String>
+        List<String> topStudents = students.stream()
+                .filter(s -> s.getMarks() > 75)
+                .sorted(Comparator.comparingInt(Student::getMarks))
+                .map(Student::getName)
+                .collect(Collectors.toList());
+
+        System.out.println("\nCollected Names List: " + topStudents);
+    }
+}
