@@ -1,0 +1,109 @@
+import java.io.*;
+import java.util.Scanner;
+
+class Employee {
+    private String id;
+    private String name;
+    private String designation;
+    private double salary;
+
+    public Employee(String id, String name, String designation, double salary) {
+        this.id = id;
+        this.name = name;
+        this.designation = designation;
+        this.salary = salary;
+    }
+
+    @Override
+    public String toString() {
+        return id + "," + name + "," + designation + "," + salary;
+    }
+
+    public String getFormattedDetails() {
+        return "ID: " + id + " | Name: " + name + " | Designation: " + designation + " | Salary: " + salary;
+    }
+}
+
+public class EmployeeManagement {
+    private static final String FILE_NAME = "employees.txt";
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        int choice;
+
+        do {
+            System.out.println("\n===== Employee Management System =====");
+            System.out.println("1. Add Employee");
+            System.out.println("2. Display All Employees");
+            System.out.println("3. Exit");
+            System.out.print("Enter your choice: ");
+            choice = sc.nextInt();
+            sc.nextLine(); // consume newline
+
+            switch (choice) {
+                case 1:
+                    addEmployee(sc);
+                    break;
+                case 2:
+                    displayEmployees();
+                    break;
+                case 3:
+                    System.out.println("Exiting... Thank you!");
+                    break;
+                default:
+                    System.out.println("Invalid choice! Please try again.");
+            }
+        } while (choice != 3);
+
+        sc.close();
+    }
+
+    // Function to add an employee and save to file
+    private static void addEmployee(Scanner sc) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME, true))) {
+            System.out.print("Enter Employee ID: ");
+            String id = sc.nextLine();
+            System.out.print("Enter Name: ");
+            String name = sc.nextLine();
+            System.out.print("Enter Designation: ");
+            String designation = sc.nextLine();
+            System.out.print("Enter Salary: ");
+            double salary = sc.nextDouble();
+            sc.nextLine(); // consume newline
+
+            Employee emp = new Employee(id, name, designation, salary);
+
+            // Save employee record to file
+            writer.write(emp.toString());
+            writer.newLine();
+
+            System.out.println("Employee record added successfully!");
+        } catch (IOException e) {
+            System.out.println("Error writing to file: " + e.getMessage());
+        }
+    }
+
+    // Function to read and display all employee records
+    private static void displayEmployees() {
+        try (BufferedReader reader = new BufferedReader(new FileReader(FILE_NAME))) {
+            String line;
+            boolean found = false;
+            System.out.println("\n--- Employee Records ---");
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length == 4) {
+                    Employee emp = new Employee(parts[0], parts[1], parts[2], Double.parseDouble(parts[3]));
+                    System.out.println(emp.getFormattedDetails());
+                    found = true;
+                }
+            }
+            if (!found) {
+                System.out.println("No employee records found.");
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("No records file found. Please add employees first.");
+        } catch (IOException e) {
+            System.out.println("Error reading file: " + e.getMessage());
+        }
+    }
+}
