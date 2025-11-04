@@ -1,0 +1,112 @@
+// File: TransactionManagementDemo.java
+package com.example;
+
+import javax.persistence.*;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.*;
+import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.annotation.Transactional;
+
+// ---------------- Entity: Account ----------------
+@Entity
+@Table(name = "account")
+class Account {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+
+    @Column(name = "holder_name")
+    private String holderName;
+
+    @Column(name = "balance")
+    private double balance;
+
+    public Account() {}
+    public Account(String holderName, double balance) {
+        this.holderName = holderName;
+        this.balance = balance;
+    }
+
+    public int getId() { return id; }
+    public String getHolderName() { return holderName; }
+    public double getBalance() { return balance; }
+    public void setBalance(double balance) { this.balance = balance; }
+}
+
+// ---------------- DAO Layer ----------------
+@Repository
+class AccountDAO {
+    @Autowired
+    private SessionFactory sessionFactory;
+
+    public Account getAccount(int id) {
+        return sessionFactory.getCurrentSession().get(Account.class, id);
+    }
+
+    public void updateAccount(Account account) {
+        sessionFactory.getCurrentSession().update(account);
+    }
+}
+
+// ---------------- Service Layer ----------------
+@Service
+class BankingService {
+    @Autowired
+    private AccountDAO accountDAO;
+
+    @Transactional
+    public void transferMoney(int fromId, int toId, double amount) {
+        Account from = accountDAO.getAccount(fromId);
+        Account to = accountDAO.getAccount(toId);
+
+        if (from == null || to == null)
+            throw new RuntimeException("Invalid Account ID!");
+
+        if (from.getBalance() < amount)
+            throw new RuntimeException("Insufficient Balance!");
+
+        from.setBalance(from.getBalance() - amount);
+        to.setBalance(to.getBalance() + amount);
+
+        accountDAO.updateAccount(from);
+        accountDAO.updateAccount(to);
+
+        System.out.println("Transaction Successful: ₹" + amount + " transferred from " +
+                from.getHolderName() + " to " + to.getHolderName());
+    }
+}
+
+// ---------------- Spring Configuration ----------------
+@Configuration
+@ComponentScan(basePackages = "com.example")
+@EnableTransactionManagement
+class AppConfig {
+    @Bean
+    public SessionFactory sessionFactory() {
+        return new Configuration().configure("hibernate.cfg.xml").addAnnotatedClass(Account.class).buildSessionFactory();
+    }
+
+    @Bean
+    public org.springframework.orm.hibernate5.HibernateTransactionManager transactionManager(SessionFactory sf) {
+        return new org.springframework.orm.hibernate5.HibernateTransactionManager(sf);
+    }
+}
+
+// ---------------- Main Application ----------------
+public class TransactionManagementDemo {
+    public static void main(String[] args) {
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
+        BankingService service = context.getBean(BankingService.class);
+
+        try {
+            service.transferMoney(1, 2, 1000.0);
+        } catch (Exception e) {
+            System.out.println("Transaction Failed: " + e.getMessage());
+        }
+        context.close();
+    }
+}
