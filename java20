@@ -1,0 +1,115 @@
+# =======================================================
+# 🧪 EXPERIMENT 9.1 — Dockerize a React Application with Multi-Stage Build
+# =======================================================
+
+# ---------- React App Code (Inside same project folder) ----------
+# File: package.json
+# ------------------
+# {
+#   "name": "react-docker-app",
+#   "version": "1.0.0",
+#   "private": true,
+#   "dependencies": {
+#     "react": "^18.3.1",
+#     "react-dom": "^18.3.1",
+#     "react-scripts": "5.0.1"
+#   },
+#   "scripts": {
+#     "start": "react-scripts start",
+#     "build": "react-scripts build",
+#     "test": "react-scripts test",
+#     "eject": "react-scripts eject"
+#   }
+# }
+
+# --------------------------
+# File: src/App.js
+# --------------------------
+# import React from "react";
+# function App() {
+#   return (
+#     <div style={{ textAlign: "center", marginTop: "50px" }}>
+#       <h1>🚀 React App Dockerized with Multi-Stage Build</h1>
+#       <p>This app is running inside a production Nginx container!</p>
+#     </div>
+#   );
+# }
+# export default App;
+
+# --------------------------
+# File: src/index.js
+# --------------------------
+# import React from "react";
+# import ReactDOM from "react-dom/client";
+# import App from "./App";
+# const root = ReactDOM.createRoot(document.getElementById("root"));
+# root.render(<App />);
+
+# --------------------------
+# File: public/index.html
+# --------------------------
+# <!DOCTYPE html>
+# <html lang="en">
+#   <head>
+#     <meta charset="UTF-8" />
+#     <title>React Docker App</title>
+#   </head>
+#   <body>
+#     <div id="root"></div>
+#   </body>
+# </html>
+
+# --------------------------
+# File: .dockerignore
+# --------------------------
+# node_modules
+# build
+# .git
+# .gitignore
+# Dockerfile
+# docker-compose.yml
+# README.md
+# npm-debug.log
+
+
+# =======================================================
+# 🐳 File: Dockerfile
+# =======================================================
+
+# ---------- Stage 1: Build React App ----------
+FROM node:18 AS build
+WORKDIR /app
+
+# Copy package files and install dependencies
+COPY package*.json ./
+RUN npm install
+
+# Copy all project files and build production code
+COPY . .
+RUN npm run build
+
+# ---------- Stage 2: Serve with Nginx ----------
+FROM nginx:alpine
+
+# Copy build output to Nginx HTML directory
+COPY --from=build /app/build /usr/share/nginx/html
+
+# Expose port 80 to access the app
+EXPOSE 80
+
+# Start Nginx server
+CMD ["nginx", "-g", "daemon off;"]
+
+# =======================================================
+# ✅ Expected Output:
+#   - A running container serving your React app on http://localhost
+#   - Optimized small-size production Docker image
+# =======================================================
+
+# =======================================================
+# 🔧 Commands to Build and Run:
+# =======================================================
+# 1️⃣ docker build -t react-docker-app .
+# 2️⃣ docker run -d -p 80:80 react-docker-app
+# 3️⃣ Open browser → http://localhost
+# =======================================================
