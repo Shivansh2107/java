@@ -1,0 +1,101 @@
+// File: HibernateStudentCRUD.java
+package com.example;
+
+import org.hibernate.*;
+import org.hibernate.cfg.Configuration;
+import javax.persistence.*;
+import java.util.List;
+
+// Entity class
+@Entity
+@Table(name = "student")
+class Student {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private int id;
+
+    @Column(name = "name")
+    private String name;
+
+    @Column(name = "course")
+    private String course;
+
+    @Column(name = "marks")
+    private double marks;
+
+    public Student() {}
+    public Student(String name, String course, double marks) {
+        this.name = name;
+        this.course = course;
+        this.marks = marks;
+    }
+
+    public int getId() { return id; }
+    public String getName() { return name; }
+    public String getCourse() { return course; }
+    public double getMarks() { return marks; }
+
+    public void setName(String name) { this.name = name; }
+    public void setCourse(String course) { this.course = course; }
+    public void setMarks(double marks) { this.marks = marks; }
+
+    @Override
+    public String toString() {
+        return id + " | " + name + " | " + course + " | " + marks;
+    }
+}
+
+// Main class for CRUD operations
+public class HibernateStudentCRUD {
+
+    public static void main(String[] args) {
+        SessionFactory factory = new Configuration()
+                .configure("hibernate.cfg.xml")
+                .addAnnotatedClass(Student.class)
+                .buildSessionFactory();
+
+        Session session = factory.openSession();
+
+        try {
+            // CREATE
+            session.beginTransaction();
+            Student s1 = new Student("Vaibhav Trivedi", "Java", 90);
+            session.save(s1);
+            session.getTransaction().commit();
+            System.out.println("Student added: " + s1);
+
+            // READ
+            session = factory.openSession();
+            session.beginTransaction();
+            List<Student> students = session.createQuery("from Student").list();
+            System.out.println("\nAll Students:");
+            for (Student s : students)
+                System.out.println(s);
+            session.getTransaction().commit();
+
+            // UPDATE
+            session = factory.openSession();
+            session.beginTransaction();
+            Student s2 = session.get(Student.class, s1.getId());
+            s2.setMarks(95);
+            session.update(s2);
+            session.getTransaction().commit();
+            System.out.println("\nUpdated Student: " + s2);
+
+            // DELETE
+            session = factory.openSession();
+            session.beginTransaction();
+            Student s3 = session.get(Student.class, s1.getId());
+            if (s3 != null) {
+                session.delete(s3);
+                System.out.println("\nDeleted Student with ID: " + s3.getId());
+            }
+            session.getTransaction().commit();
+
+        } finally {
+            session.close();
+            factory.close();
+        }
+    }
+}
