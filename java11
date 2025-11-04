@@ -1,0 +1,39 @@
+// File: LoginServlet.java
+// Location: src/main/java/com/example/LoginServlet.java
+
+import java.io.*;
+import javax.servlet.*;
+import javax.servlet.http.*;
+
+@WebServlet("/LoginServlet")
+public class LoginServlet extends HttpServlet {
+
+    // Handle POST request (from the HTML form)
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        // Set response type to HTML
+        response.setContentType("text/html");
+        PrintWriter out = response.getWriter();
+
+        // Retrieve form data
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+
+        // --- Step 1: Validate credentials ---
+        // You can replace this with a database check if needed
+        if ("vaibhav".equals(username) && "12345".equals(password)) {
+            // --- Step 2: Display success message ---
+            out.println("<html><body>");
+            out.println("<h2>Welcome, " + username + "!</h2>");
+            out.println("<p>Login Successful. You have accessed your dashboard.</p>");
+            out.println("</body></html>");
+        } else {
+            // --- Step 3: Display error message ---
+            out.println("<html><body>");
+            out.println("<h3 style='color:red;'>Invalid username or password!</h3>");
+            out.println("<a href='login.html'>Try Again</a>");
+            out.println("</body></html>");
+        }
+    }
+}
