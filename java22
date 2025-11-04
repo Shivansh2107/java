@@ -1,0 +1,182 @@
+# =======================================================
+# 🧪 EXPERIMENT 9.3 — Deploy Full Stack App on AWS with Load Balancing
+# =======================================================
+# 🎯 Objective:
+# Deploy a Full Stack (React + Node.js + MongoDB) application on AWS EC2
+# and configure an AWS Application Load Balancer (ALB) for scalability.
+# =======================================================
+
+
+# =======================================================
+# 🏗️ STEP 1: BACKEND (Node.js + Express)
+# =======================================================
+# 📁 File: server.js
+# -------------------------------------------------------
+const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 5000;
+const cors = require('cors');
+
+app.use(cors());
+app.use(express.json());
+
+app.get('/', (req, res) => {
+  res.send('✅ Backend API is running successfully on AWS EC2 Instance!');
+});
+
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
+
+# -------------------------------------------------------
+# 📁 File: package.json
+# -------------------------------------------------------
+# {
+#   "name": "aws-backend",
+#   "version": "1.0.0",
+#   "main": "server.js",
+#   "scripts": {
+#     "start": "node server.js"
+#   },
+#   "dependencies": {
+#     "express": "^4.18.2",
+#     "cors": "^2.8.5"
+#   }
+# }
+
+# -------------------------------------------------------
+# Commands to set up backend EC2 instance:
+# -------------------------------------------------------
+# 1️⃣ SSH into EC2 instance:
+#     ssh -i "your-key.pem" ec2-user@<EC2_PUBLIC_IP>
+#
+# 2️⃣ Install Node.js:
+#     sudo yum install -y nodejs git
+#
+# 3️⃣ Clone your repo or upload code:
+#     git clone https://github.com/yourusername/aws-fullstack-app.git
+#     cd aws-fullstack-app/backend
+#
+# 4️⃣ Install dependencies:
+#     npm install
+#
+# 5️⃣ Start backend server:
+#     node server.js
+#
+# 6️⃣ Test in browser:
+#     http://<EC2_PUBLIC_IP>:5000/
+
+
+# =======================================================
+# ⚛️ STEP 2: FRONTEND (React App)
+# =======================================================
+# 📁 File: src/App.js
+# -------------------------------------------------------
+import React, { useEffect, useState } from "react";
+
+function App() {
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    fetch("http://<BACKEND_PUBLIC_IP>:5000/")
+      .then(res => res.text())
+      .then(data => setMessage(data));
+  }, []);
+
+  return (
+    <div style={{ textAlign: "center", marginTop: "50px" }}>
+      <h1>🌐 Full Stack App on AWS</h1>
+      <p>{message}</p>
+    </div>
+  );
+}
+
+export default App;
+
+# -------------------------------------------------------
+# Build and deploy frontend:
+# -------------------------------------------------------
+# 1️⃣ npm run build
+# 2️⃣ Install Nginx on EC2 frontend instance:
+#     sudo yum install -y nginx
+# 3️⃣ Copy build files to Nginx web root:
+#     sudo cp -r build/* /usr/share/nginx/html/
+# 4️⃣ Start Nginx:
+#     sudo systemctl start nginx
+# 5️⃣ Test frontend:
+#     http://<FRONTEND_EC2_PUBLIC_IP>/
+
+
+# =======================================================
+# ⚙️ STEP 3: CONFIGURE AWS APPLICATION LOAD BALANCER (ALB)
+# =======================================================
+# 1️⃣ Go to AWS Console → EC2 → Load Balancers → Create Load Balancer
+# 2️⃣ Choose “Application Load Balancer”
+# 3️⃣ Configure:
+#     - Name: student-app-alb
+#     - Scheme: Internet-facing
+#     - IP Type: IPv4
+# 4️⃣ Configure Listeners:
+#     - Protocol: HTTP
+#     - Port: 80
+# 5️⃣ Configure Target Group:
+#     - Targets: Select multiple backend EC2 instances (port 5000)
+#     - Health Check Path: /
+# 6️⃣ Register EC2 instances
+# 7️⃣ Review and Create
+
+# ALB will now distribute incoming requests among backend EC2 instances.
+# Test ALB DNS:
+#     http://<ALB_DNS_NAME>
+
+
+# =======================================================
+# 🔒 STEP 4: SECURITY GROUP CONFIGURATION
+# =======================================================
+# - Allow inbound HTTP (port 80)
+# - Allow inbound SSH (port 22)
+# - Allow inbound custom TCP (port 5000 for backend)
+# - Allow only ALB to access backend instances (restrict by source group)
+
+
+# =======================================================
+# 🧠 STEP 5: OPTIONAL – CONNECT DATABASE (MongoDB)
+# =======================================================
+# Install and connect MongoDB Atlas or EC2-hosted MongoDB:
+# const mongoose = require("mongoose");
+# mongoose.connect("mongodb+srv://<username>:<password>@cluster.mongodb.net/studentdb");
+
+
+# =======================================================
+# 🧰 STEP 6: TEST & VERIFY
+# =======================================================
+# ✅ Access frontend via EC2 or domain:
+#     http://<FRONTEND_EC2_PUBLIC_IP>
+#
+# ✅ Backend traffic distributed via ALB:
+#     http://<ALB_DNS_NAME>
+#
+# ✅ View logs:
+#     tail -f /var/log/nginx/access.log
+#
+# ✅ Simulate high traffic to observe load balancing.
+
+
+# =======================================================
+# 📈 EXPECTED OUTPUT
+# =======================================================
+# - React frontend accessible on EC2 or domain
+# - Node.js backend running behind AWS ALB
+# - Load Balancer distributes traffic among backend servers
+# - Fault tolerance achieved: if one instance fails, ALB redirects traffic
+# =======================================================
+
+# =======================================================
+# 🌐 Summary
+# =======================================================
+# - Frontend: React app served by Nginx on EC2
+# - Backend: Node.js/Express API deployed to multiple EC2 instances
+# - Load Balancer: AWS Application Load Balancer (ALB)
+# - Database (Optional): MongoDB Atlas
+# - Ensures scalability, availability, and real-world deployment experience
+# =======================================================
