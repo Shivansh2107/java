@@ -1,0 +1,56 @@
+// File: DependencyInjectionDemo.java
+package com.example;
+
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.*;
+
+// Course class
+class Course {
+    private String courseName;
+
+    public Course(String courseName) {
+        this.courseName = courseName;
+    }
+
+    public void displayCourse() {
+        System.out.println("Enrolled in course: " + courseName);
+    }
+}
+
+// Student class
+class Student {
+    private Course course;
+
+    public Student(Course course) {
+        this.course = course;
+    }
+
+    public void showDetails() {
+        System.out.println("Student object created successfully.");
+        course.displayCourse();
+    }
+}
+
+// Configuration class
+@Configuration
+class AppConfig {
+
+    @Bean
+    public Course course() {
+        return new Course("Spring Framework");
+    }
+
+    @Bean
+    public Student student() {
+        return new Student(course());
+    }
+}
+
+// Main class
+public class DependencyInjectionDemo {
+    public static void main(String[] args) {
+        ApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
+        Student student = context.getBean(Student.class);
+        student.showDetails();
+    }
+}
