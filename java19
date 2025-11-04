@@ -1,0 +1,27 @@
+package com.studentmanagement.entity;
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "students")
+public class Student {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+    private String name;
+    private String course;
+    private double fees;
+
+    public Student() {}
+    public Student(String name, String course, double fees) {
+        this.name = name;
+        this.course = course;
+        this.fees = fees;
+    }
+    public int getId() { return id; }
+    public String getName() { return name; }
+    public String getCourse() { return course; }
+    public double getFees() { return fees; }
+    public void setName(String name) { this.name = name; }
+    public void setCourse(String course) { this.course = course; }
+    public void setFees(double fees) { this.fees = fees; }
+}
